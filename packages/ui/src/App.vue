@@ -39,6 +39,11 @@ const error = ref("");
 const health = ref<HealthResponse["data"] | null>(null);
 const config = ref<ConfigResponse["data"] | null>(null);
 const system = ref<SystemResponse["data"] | null>(null);
+const apiBase = new URL("./api/", window.location.href);
+
+function apiUrl(path: string) {
+  return new URL(path.replace(/^\//, ""), apiBase).toString();
+}
 
 const cards = computed(() => [
   {
@@ -65,9 +70,9 @@ async function loadData() {
 
   try {
     const [healthRes, configRes, systemRes] = await Promise.all([
-      fetch("/api/health"),
-      fetch("/api/config"),
-      fetch("/api/system")
+      fetch(apiUrl("health")),
+      fetch(apiUrl("config")),
+      fetch(apiUrl("system"))
     ]);
 
     if (!healthRes.ok || !configRes.ok || !systemRes.ok) {
@@ -103,11 +108,11 @@ onMounted(() => {
         <h1>{{ config?.appTitle || "fnOS App Template" }}</h1>
         <p>
           现在这个模板已经切成了更适合继续开发的结构：Vue 3 负责页面，Nitro 负责 API 和
-          fnOS 打包发布。后面写页面就直接在 <code>web/src</code> 里扩展。
+          fnOS 打包发布。后面写页面就直接在 <code>packages/ui/src</code> 里扩展。
         </p>
         <div class="actions">
-          <a class="action primary" href="/api/health" target="_blank" rel="noreferrer">健康检查</a>
-          <a class="action" href="/api/system" target="_blank" rel="noreferrer">系统信息</a>
+          <a class="action primary" :href="apiUrl('health')" target="_blank" rel="noreferrer">健康检查</a>
+          <a class="action" :href="apiUrl('system')" target="_blank" rel="noreferrer">系统信息</a>
           <button class="action ghost" type="button" @click="loadData">刷新状态</button>
         </div>
       </div>
@@ -139,11 +144,11 @@ onMounted(() => {
       <div class="panel-grid">
         <div class="panel-item">
           <h3>页面目录</h3>
-          <p><code>web/src</code> 放 Vue 页面、组件、样式和静态资源。</p>
+          <p><code>packages/ui/src</code> 放 Vue 页面、组件、样式和静态资源。</p>
         </div>
         <div class="panel-item">
           <h3>接口目录</h3>
-          <p><code>src/routes/api</code> 继续放 Nitro API 路由。</p>
+          <p><code>packages/server/routes/api</code> 继续放 Nitro API 路由。</p>
         </div>
         <div class="panel-item">
           <h3>打包目录</h3>

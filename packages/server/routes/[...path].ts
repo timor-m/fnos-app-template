@@ -1,7 +1,6 @@
 import { createError, defineEventHandler, getRequestURL, sendProxy, setResponseHeader } from "h3";
-import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
-import { extname, join, normalize } from "node:path";
+import { extname } from "node:path";
+import { isAssetRequest, readUiFile, readUiIndexHtml } from "../utils/ui-files";
 
 const contentTypes: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
@@ -29,18 +28,22 @@ export default defineEventHandler(async (event) => {
     return sendProxy(event, `${viteDevServerUrl}${url.pathname}${url.search}`);
   }
 
-  const safePath = normalize(url.pathname).replace(/^(\.\.(\/|\\|$))+/, "");
-  const filePath = join(process.cwd(), ".ui-dist", safePath);
+  const file = await readUiFile(url.pathname);
+  if (!file) {
+    if (isAssetRequest(url.pathname)) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Not Found"
+      });
+    }
 
-  if (!existsSync(filePath)) {
-    const html = await readFile(join(process.cwd(), ".ui-dist", "index.html"), "utf8");
+    const html = await readUiIndexHtml();
     setResponseHeader(event, "content-type", "text/html; charset=utf-8");
     return html;
   }
 
-  const ext = extname(filePath).toLowerCase();
+  const ext = extname(url.pathname).toLowerCase();
   const contentType = contentTypes[ext] || "application/octet-stream";
-  const file = await readFile(filePath);
   setResponseHeader(event, "content-type", contentType);
   return file;
 });

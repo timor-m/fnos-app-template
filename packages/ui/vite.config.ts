@@ -7,6 +7,7 @@ const webPort = Number(process.env.WEB_PORT || appPort + 1);
 
 export default defineConfig({
   root: fileURLToPath(new URL(".", import.meta.url)),
+  base: "./",
   plugins: [vue()],
   resolve: {
     alias: {
