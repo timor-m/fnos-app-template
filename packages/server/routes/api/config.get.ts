@@ -8,6 +8,8 @@ export default defineEventHandler(() => {
   return ok({
     appName: config.appName,
     appTitle: config.appTitle,
+    accessMode: config.accessMode,
+    gatewayPrefix: config.gatewayPrefix,
     appPort: config.appPort,
     logLevel: config.logLevel
   });

@@ -7,7 +7,9 @@ type HealthResponse = {
   data: {
     service: string;
     runtime: string;
-    port: number;
+    accessMode: "gateway" | "port";
+    gatewayPrefix: string;
+    port: number | null;
   };
 };
 
@@ -16,7 +18,9 @@ type ConfigResponse = {
   data: {
     appName: string;
     appTitle: string;
-    appPort: number;
+    accessMode: "gateway" | "port";
+    gatewayPrefix: string;
+    appPort: number | null;
     logLevel: string;
   };
 };
@@ -26,11 +30,23 @@ type SystemResponse = {
   data: {
     appName: string;
     appTitle: string;
-    appPort: number;
+    accessMode: "gateway" | "port";
+    gatewayPrefix: string;
+    appPort: number | null;
     runtime: string;
     nodePlatform: string;
     nodeArch: string;
     processUptimeSec: number;
+  };
+};
+
+type SessionResponse = {
+  ok: boolean;
+  data: {
+    authenticated: boolean;
+    uid: string | null;
+    username: string | null;
+    isAdmin: boolean;
   };
 };
 
@@ -39,6 +55,7 @@ const error = ref("");
 const health = ref<HealthResponse["data"] | null>(null);
 const config = ref<ConfigResponse["data"] | null>(null);
 const system = ref<SystemResponse["data"] | null>(null);
+const session = ref<SessionResponse["data"] | null>(null);
 const apiBase = new URL("./api/", window.location.href);
 
 function apiUrl(path: string) {
@@ -51,8 +68,8 @@ const cards = computed(() => [
     value: system.value?.runtime || "Nitro"
   },
   {
-    label: "Port",
-    value: String(config.value?.appPort || health.value?.port || "-")
+    label: "Access",
+    value: config.value?.accessMode === "gateway" ? "fnOS Gateway" : "Local Port"
   },
   {
     label: "Log Level",
@@ -69,25 +86,28 @@ async function loadData() {
   error.value = "";
 
   try {
-    const [healthRes, configRes, systemRes] = await Promise.all([
+    const [healthRes, configRes, systemRes, sessionRes] = await Promise.all([
       fetch(apiUrl("health")),
       fetch(apiUrl("config")),
-      fetch(apiUrl("system"))
+      fetch(apiUrl("system")),
+      fetch(apiUrl("session"))
     ]);
 
-    if (!healthRes.ok || !configRes.ok || !systemRes.ok) {
+    if (!healthRes.ok || !configRes.ok || !systemRes.ok || !sessionRes.ok) {
       throw new Error("接口请求失败");
     }
 
-    const [healthJson, configJson, systemJson] = await Promise.all([
+    const [healthJson, configJson, systemJson, sessionJson] = await Promise.all([
       healthRes.json() as Promise<HealthResponse>,
       configRes.json() as Promise<ConfigResponse>,
-      systemRes.json() as Promise<SystemResponse>
+      systemRes.json() as Promise<SystemResponse>,
+      sessionRes.json() as Promise<SessionResponse>
     ]);
 
     health.value = healthJson.data;
     config.value = configJson.data;
     system.value = systemJson.data;
+    session.value = sessionJson.data;
   } catch (err) {
     error.value = err instanceof Error ? err.message : "加载失败";
   } finally {
@@ -108,7 +128,8 @@ onMounted(() => {
         <h1>{{ config?.appTitle || "fnOS App Template" }}</h1>
         <p>
           现在这个模板已经切成了更适合继续开发的结构：Vue 3 负责页面，Nitro 负责 API 和
-          fnOS 打包发布。后面写页面就直接在 <code>packages/ui/src</code> 里扩展。
+          fnOS 打包发布，并通过统一网关复用 NAS 登录态。后面写页面就直接在
+          <code>packages/ui/src</code> 里扩展。
         </p>
         <div class="actions">
           <a class="action primary" :href="apiUrl('health')" target="_blank" rel="noreferrer">健康检查</a>
@@ -122,7 +143,7 @@ onMounted(() => {
           <img class="preview-icon" :src="appIcon" alt="app icon" />
           <div>
             <strong>{{ config?.appName || "fnos-app-template" }}</strong>
-            <p>桌面入口、应用配置与打包链路都保留兼容。</p>
+            <p>{{ config?.gatewayPrefix || "/app/fnos-app-template" }}</p>
           </div>
         </div>
       </div>
@@ -152,7 +173,7 @@ onMounted(() => {
         </div>
         <div class="panel-item">
           <h3>打包目录</h3>
-          <p><code>scripts/prepare-package.mjs</code> 仍然负责 fnOS 产物生成。</p>
+          <p><code>scripts/prepare-package.mjs</code> 负责生成并校验 fnOS 产物。</p>
         </div>
         <div class="panel-item">
           <h3>开发命令</h3>
@@ -169,7 +190,7 @@ onMounted(() => {
 
       <div v-if="loading" class="feedback">正在读取应用状态...</div>
       <div v-else-if="error" class="feedback error">{{ error }}</div>
-      <pre v-else class="response">{{ { health, config, system } }}</pre>
+      <pre v-else class="response">{{ { health, config, system, session } }}</pre>
     </section>
   </main>
 </template>

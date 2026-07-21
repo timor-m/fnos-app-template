@@ -1,13 +1,15 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from "node:url";
+import templateConfig from "../../template.config.json" with { type: "json" };
 
-const appPort = Number(process.env.APP_PORT || 3333);
+const appPort = Number(process.env.APP_PORT || templateConfig.localDevPort);
 const webPort = Number(process.env.WEB_PORT || appPort + 1);
+const gatewayPrefix = templateConfig.gatewayPrefix;
 
 export default defineConfig({
   root: fileURLToPath(new URL(".", import.meta.url)),
-  base: "./",
+  base: `${gatewayPrefix}/`,
   plugins: [vue()],
   resolve: {
     alias: {
@@ -19,8 +21,8 @@ export default defineConfig({
     port: webPort,
     strictPort: true,
     proxy: {
-      "/api": `http://127.0.0.1:${appPort}`,
-      "/healthz": `http://127.0.0.1:${appPort}`
+      [`${gatewayPrefix}/api`]: `http://127.0.0.1:${appPort}`,
+      [`${gatewayPrefix}/healthz`]: `http://127.0.0.1:${appPort}`
     }
   },
   build: {

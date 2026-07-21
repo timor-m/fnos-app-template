@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
+import { getAppConfig } from "./runtime-config";
 
 const runtimeDir = dirname(fileURLToPath(import.meta.url));
 const builtPublicDir = normalize(join(runtimeDir, "../../public"));
@@ -18,8 +19,22 @@ export function isAssetRequest(pathname: string) {
   return pathname.startsWith("/assets/") || pathname === "/favicon.ico" || extname(pathname) !== "";
 }
 
+export function stripGatewayPrefix(pathname: string) {
+  const { gatewayPrefix } = getAppConfig();
+
+  if (pathname === gatewayPrefix) {
+    return "/";
+  }
+
+  if (pathname.startsWith(`${gatewayPrefix}/`)) {
+    return pathname.slice(gatewayPrefix.length);
+  }
+
+  return pathname;
+}
+
 export function resolveUiFile(pathname: string) {
-  const safePath = normalize(pathname).replace(/^(\.\.(\/|\\|$))+/, "");
+  const safePath = normalize(stripGatewayPrefix(pathname)).replace(/^(\.\.(\/|\\|$))+/, "");
 
   for (const baseDir of candidatePublicDirs()) {
     const filePath = join(baseDir, safePath);

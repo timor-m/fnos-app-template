@@ -13,8 +13,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install
-      - run: npm run pack:app
+      - run: npm ci
       - run: npm run download:fnpack
       - run: npm run pack:fpk
       - name: Upload app.tgz artifact

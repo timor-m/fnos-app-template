@@ -5,7 +5,7 @@
 ## Development
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -22,3 +22,5 @@ npm run pack:fpk
 - 请优先修改 `template.config.json`
 - 版本号以 `package.json` 为主
 - `prepare-package` 会自动同步版本到 `manifest`
+- 变更打包逻辑后必须执行 `npm run pack:app`，确保包结构校验通过
+- fnOS 规范和设备测试清单见 `docs/FNOS_DEVELOPMENT.md`

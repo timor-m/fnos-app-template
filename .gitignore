@@ -3,6 +3,7 @@ node_modules/
 .fnos-build/
 dist/
 .ui-dist/
+.tmp-nitro/
 .npm-cache/
 .DS_Store
 *.log
@@ -10,3 +11,4 @@ coverage/
 npm-debug.log*
 tools/fnpack
 tools/fnpack-*
+tools/fnpack.version

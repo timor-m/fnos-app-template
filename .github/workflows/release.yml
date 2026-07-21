@@ -21,10 +21,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install
-
-      - name: Pack app.tgz
-        run: npm run pack:app
+        run: npm ci
 
       - name: Download fnpack
         run: npm run download:fnpack
@@ -51,8 +48,10 @@ jobs:
             echo
             echo "## Highlights"
             echo
-            echo "- Nitro backend scaffold"
+            echo "- Nitro backend with fnOS unified gateway"
+            echo "- Unix Socket runtime and gateway user context"
             echo "- fnOS package directory generator"
+            echo "- Package structure validation"
             echo "- Automatic fnpack download in CI"
             echo "- GitHub Release artifact publishing"
             echo

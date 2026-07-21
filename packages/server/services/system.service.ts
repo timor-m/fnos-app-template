@@ -1,4 +1,4 @@
-import { arch, platform, uptime } from "node:os";
+import { arch, platform } from "node:os";
 import { getAppConfig } from "../utils/runtime-config";
 
 export function getSystemSummary() {
@@ -7,10 +7,12 @@ export function getSystemSummary() {
   return {
     appName: config.appName,
     appTitle: config.appTitle,
+    accessMode: config.accessMode,
+    gatewayPrefix: config.gatewayPrefix,
     appPort: config.appPort,
     runtime: "nitro",
     nodePlatform: platform(),
     nodeArch: arch(),
-    processUptimeSec: Math.floor(uptime())
+    processUptimeSec: Math.floor(process.uptime())
   };
 }

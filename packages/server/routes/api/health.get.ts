@@ -8,6 +8,8 @@ export default defineEventHandler(() => {
   return ok({
     service: config.appName,
     runtime: "nitro",
+    accessMode: config.accessMode,
+    gatewayPrefix: config.gatewayPrefix,
     port: config.appPort
   });
 });

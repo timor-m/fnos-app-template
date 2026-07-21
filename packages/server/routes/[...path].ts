@@ -1,6 +1,11 @@
 import { createError, defineEventHandler, getRequestURL, sendProxy, setResponseHeader } from "h3";
 import { extname } from "node:path";
-import { isAssetRequest, readUiFile, readUiIndexHtml } from "../utils/ui-files";
+import {
+  isAssetRequest,
+  readUiFile,
+  readUiIndexHtml,
+  stripGatewayPrefix
+} from "../utils/ui-files";
 
 const contentTypes: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
@@ -15,8 +20,9 @@ const contentTypes: Record<string, string> = {
 
 export default defineEventHandler(async (event) => {
   const url = getRequestURL(event);
+  const appPath = stripGatewayPrefix(url.pathname);
 
-  if (url.pathname.startsWith("/api/") || url.pathname === "/healthz") {
+  if (appPath.startsWith("/api/") || appPath === "/healthz") {
     throw createError({
       statusCode: 404,
       statusMessage: "Not Found"
@@ -28,9 +34,9 @@ export default defineEventHandler(async (event) => {
     return sendProxy(event, `${viteDevServerUrl}${url.pathname}${url.search}`);
   }
 
-  const file = await readUiFile(url.pathname);
+  const file = await readUiFile(appPath);
   if (!file) {
-    if (isAssetRequest(url.pathname)) {
+    if (isAssetRequest(appPath)) {
       throw createError({
         statusCode: 404,
         statusMessage: "Not Found"
@@ -42,7 +48,7 @@ export default defineEventHandler(async (event) => {
     return html;
   }
 
-  const ext = extname(url.pathname).toLowerCase();
+  const ext = extname(appPath).toLowerCase();
   const contentType = contentTypes[ext] || "application/octet-stream";
   setResponseHeader(event, "content-type", contentType);
   return file;

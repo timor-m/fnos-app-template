@@ -14,10 +14,11 @@
     "dev:server": "node scripts/dev.mjs",
     "build:web": "vite build --config packages/ui/vite.config.ts",
     "build": "npm run build:web && nitro build",
-    "start": "node .server-dist/server/index.mjs",
+    "start": "node scripts/start.mjs",
     "download:fnpack": "node scripts/download-fnpack.mjs",
     "prepare:package": "node scripts/prepare-package.mjs",
-    "pack:app": "npm run build && npm run prepare:package && bash scripts/pack-app.sh",
+    "validate:package": "node scripts/validate-package.mjs",
+    "pack:app": "npm run build && npm run prepare:package && bash scripts/pack-app.sh && npm run validate:package",
     "pack:fpk": "npm run pack:app && bash scripts/pack-fpk.sh"
   },
   "dependencies": {

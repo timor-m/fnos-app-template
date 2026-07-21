@@ -1,7 +1,8 @@
 import templateConfig from "./template.config.json" with { type: "json" };
 
 export default defineNitroConfig({
-  preset: "node-server",
+  preset: "node-middleware",
+  baseURL: `${templateConfig.gatewayPrefix}/`,
   serverDir: "packages/server",
   output: {
     dir: ".server-dist"
@@ -14,7 +15,7 @@ export default defineNitroConfig({
   runtimeConfig: {
     appName: templateConfig.appName,
     appTitle: templateConfig.appTitle,
-    appPort: templateConfig.servicePort,
+    appPort: templateConfig.localDevPort,
     logLevel: templateConfig.logLevel,
     logDir: `/var/apps/${templateConfig.appName}/var/log`,
     storageDir: `/var/apps/${templateConfig.appName}/var/data`

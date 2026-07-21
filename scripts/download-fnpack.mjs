@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-import { chmodSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
 const rootDir = resolve(dirname(new URL(import.meta.url).pathname), "..");
 const toolsDir = join(rootDir, "tools");
-const version = process.env.FNPACK_VERSION || "1.2.1";
+const version = process.env.FNPACK_VERSION || "1.2.3";
 const force = process.env.FNPACK_FORCE === "1";
 
 const platformMap = {
@@ -32,9 +32,15 @@ mkdirSync(toolsDir, { recursive: true });
 
 const filename = process.platform === "win32" ? "fnpack.exe" : "fnpack";
 const outputPath = join(toolsDir, filename);
+const versionPath = join(toolsDir, "fnpack.version");
 
-if (existsSync(outputPath) && !force) {
-  console.log(`fnpack already exists: ${outputPath}`);
+if (
+  existsSync(outputPath)
+  && existsSync(versionPath)
+  && readFileSync(versionPath, "utf8").trim() === version
+  && !force
+) {
+  console.log(`fnpack ${version} already exists: ${outputPath}`);
   process.exit(0);
 }
 
@@ -48,6 +54,7 @@ if (!response.ok || !response.body) {
 
 const buffer = Buffer.from(await response.arrayBuffer());
 writeFileSync(outputPath, buffer);
+writeFileSync(versionPath, `${version}\n`, "utf8");
 
 if (process.platform !== "win32") {
   chmodSync(outputPath, 0o755);
