@@ -65,16 +65,18 @@ cpSync(outputDir, appServer, { recursive: true });
 
 const iconsDir = join(rootDir, "packages", "assets", "icons");
 const generatedIconsDir = join(iconsDir, "generated");
-const packageIcon64 = join(iconsDir, "ICON.PNG");
+const packageIcon512Root = join(iconsDir, "ICON.PNG");
 const packageIcon256 = join(iconsDir, "ICON_256.PNG");
-const uiIconSizes = [32, 48, 64, 72, 96, 128, 256];
+const packageIcon512 = join(generatedIconsDir, "icon_512.png");
+const uiIconSizes = [32, 48, 64, 72, 96, 128, 256, 512];
 
-if (!existsSync(packageIcon64) || !existsSync(packageIcon256)) {
-  throw new Error("Missing required 64px or 256px package icon.");
+if (!existsSync(packageIcon512Root) || !existsSync(packageIcon256) || !existsSync(packageIcon512)) {
+  throw new Error("Missing required 512px root, 256px or generated 512px package icon.");
 }
 
-copyFileSync(packageIcon64, join(packageDir, "ICON.PNG"));
+copyFileSync(packageIcon512Root, join(packageDir, "ICON.PNG"));
 copyFileSync(packageIcon256, join(packageDir, "ICON_256.PNG"));
+copyFileSync(packageIcon512, join(packageDir, "ICON_512.PNG"));
 
 for (const size of uiIconSizes) {
   const generatedIcon = join(generatedIconsDir, `icon_${size}.png`);

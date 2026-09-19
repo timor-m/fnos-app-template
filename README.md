@@ -94,6 +94,7 @@ packages/server/          Nitro API、服务与网关用户工具
 packages/assets/          fnOS 图标资源
 scripts/                  开发、构建、打包与校验脚本
 docs/FNOS_DEVELOPMENT.md  官方开发规范摘要与发布清单
+docs/OCR_INTEGRATION.md   OCR 能力植入指南与避坑清单（按需选用）
 .ui-dist/                 前端构建产物
 .server-dist/             Nitro 构建产物
 .fnos-build/package/      fnOS 包目录

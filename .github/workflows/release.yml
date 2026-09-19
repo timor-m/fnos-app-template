@@ -32,35 +32,51 @@ jobs:
       - name: Prepare release notes
         shell: bash
         run: |
-          VERSION="$(node -p 'require("./package.json").version')"
-          {
-            echo "# fnOS App Template v${VERSION}"
-            echo
-            echo "## Summary"
-            echo
-            echo "- Open-source fnOS Native app template powered by Nitro"
-            echo "- Generated automatically by GitHub Actions"
-            echo
-            echo "## Release Artifacts"
-            echo
-            echo "- \`dist/app.tgz\`: fnOS app payload archive"
-            echo "- \`dist/*.fpk\`: installable fnOS package"
-            echo
-            echo "## Highlights"
-            echo
-            echo "- Nitro backend with fnOS unified gateway"
-            echo "- Unix Socket runtime and gateway user context"
-            echo "- fnOS package directory generator"
-            echo "- Package structure validation"
-            echo "- Automatic fnpack download in CI"
-            echo "- GitHub Release artifact publishing"
-            echo
-            echo "## Notes"
-            echo
-            echo "- Generated from GitHub Actions"
-            echo "- Version source: \`package.json\`"
-            echo "- Template config source: \`template.config.json\`"
-          } > RELEASE_NOTES.md
+          node -e '
+            const fs = require("fs");
+            const version = require("./package.json").version;
+            const changelogLines = fs.readFileSync("CHANGELOG.md", "utf8").split(/\r?\n/);
+            const start = changelogLines.findIndex((l) => l.trim() === `## ${version}` || l.startsWith(`## ${version} `));
+            let changelogBody = "";
+            if (start !== -1) {
+              let end = changelogLines.findIndex((l, i) => i > start && l.startsWith("## "));
+              if (end === -1) end = changelogLines.length;
+              changelogBody = changelogLines.slice(start + 1, end).join("\n").trim();
+            }
+            const lines = [`# fnOS App Template v${version}`, ""];
+            if (changelogBody) {
+              lines.push(changelogBody, "");
+            } else {
+              lines.push(
+                "## Summary",
+                "",
+                "- Open-source fnOS Native app template powered by Nitro",
+                "",
+                "## Highlights",
+                "",
+                "- Nitro backend with fnOS unified gateway",
+                "- Unix Socket runtime and gateway user context",
+                "- fnOS package directory generator",
+                "- Package structure validation",
+                "- Automatic fnpack download in CI",
+                "- GitHub Release artifact publishing",
+                ""
+              );
+            }
+            lines.push(
+              "## Release Artifacts",
+              "",
+              "- `dist/app.tgz`: fnOS app payload archive",
+              "- `dist/*.fpk`: installable fnOS package",
+              "",
+              "## Notes",
+              "",
+              "- Generated from GitHub Actions",
+              "- Version source: `package.json`",
+              "- Release notes source: `CHANGELOG.md` 对应版本章节（缺失时回退内置模板说明）"
+            );
+            fs.writeFileSync("RELEASE_NOTES.md", lines.join("\n") + "\n");
+          '
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
